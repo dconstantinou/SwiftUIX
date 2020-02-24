@@ -99,7 +99,8 @@ public struct _CocoaTextField: UIViewRepresentable {
     
     public func makeUIView(context: Context) -> UIViewType {
         let uiView = _UITextField()
-        
+        uiView.translatesAutoresizingMaskIntoConstraints = false
+        uiView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         uiView.delegate = context.coordinator
         
         return uiView
