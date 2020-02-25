@@ -76,10 +76,15 @@ public struct _CocoaTextField: UIViewRepresentable {
         
         public func textFieldDidChangeSelection(_ textField: UITextField) {
             base.text = textField.text ?? ""
+            base.onEditingChanged(false)
+        }
+
+        public func textFieldDidBeginEditing(_ textField: UITextField) {
+            base.isEditing = true
         }
         
         public func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
-            base.onEditingChanged(false)
+            base.isEditing = false
             base.onCommit()
         }
         
@@ -147,12 +152,12 @@ public struct _CocoaTextField: UIViewRepresentable {
         
         uiView.text = text
         uiView.textAlignment = .init(textAlignment)
-        
+
         if uiView.window != nil {
             if isEditing && !uiView.isFirstResponder {
-                uiView.becomeFirstResponder()
+                DispatchQueue.main.async { uiView.becomeFirstResponder() }
             } else if uiView.isFirstResponder {
-                uiView.resignFirstResponder()
+                DispatchQueue.main.async { uiView.resignFirstResponder() }
             }
         }
     }
