@@ -7,14 +7,14 @@ import SwiftUI
 
 #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
 
-public struct CocoaTextField<Label: View>: CocoaView {
+public struct CocoaTextField<Label: View>: View {
     private var label: Label
     
     private var text: Binding<String>
     private var onEditingChanged: (Bool) -> Void
     private var onCommit: () -> Void
     
-    private var isFirstResponder: Bool?
+    private var isEditing: Binding<Bool>
     
     private var autocapitalization: UITextAutocapitalizationType?
     private var font: UIFont?
@@ -34,7 +34,7 @@ public struct CocoaTextField<Label: View>: CocoaView {
                 text: text,
                 onEditingChanged: onEditingChanged,
                 onCommit: onCommit,
-                isFirstResponder: isFirstResponder,
+                isEditing: isEditing,
                 autocapitalization: autocapitalization,
                 font: font,
                 inputAccessoryView: inputAccessoryView,
@@ -57,7 +57,7 @@ public struct _CocoaTextField: UIViewRepresentable {
     
     @Environment(\.font) var environmentFont
     
-    var isFirstResponder: Bool?
+    @Binding var isEditing: Bool
     
     var autocapitalization: UITextAutocapitalizationType?
     var font: UIFont?
@@ -148,8 +148,8 @@ public struct _CocoaTextField: UIViewRepresentable {
         uiView.text = text
         uiView.textAlignment = .init(textAlignment)
         
-        if let isFirstResponder = isFirstResponder, uiView.window != nil {
-            if isFirstResponder && !uiView.isFirstResponder {
+        if uiView.window != nil {
+            if isEditing && !uiView.isFirstResponder {
                 uiView.becomeFirstResponder()
             } else if uiView.isFirstResponder {
                 uiView.resignFirstResponder()
@@ -168,6 +168,7 @@ extension CocoaTextField where Label == Text {
     public init<S: StringProtocol>(
         _ title: S,
         text: Binding<String>,
+        isEditing: Binding<Bool> = State(initialValue: false).projectedValue,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
         onCommit: @escaping () -> Void = { }
     ) {
@@ -175,17 +176,20 @@ extension CocoaTextField where Label == Text {
         self.text = text
         self.onEditingChanged = onEditingChanged
         self.onCommit = onCommit
+        self.isEditing = isEditing
     }
     
     public init<S: StringProtocol>(
         _ title: S,
         text: Binding<String?>,
+        isEditing: Binding<Bool> = State(initialValue: false).projectedValue,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
         onCommit: @escaping () -> Void = { }
     ) {
         self.init(
             title,
             text: text.withDefaultValue(String()),
+            isEditing: isEditing,
             onEditingChanged: onEditingChanged,
             onCommit: onCommit
         )
@@ -193,6 +197,7 @@ extension CocoaTextField where Label == Text {
     
     public init(
         text: Binding<String>,
+        isEditing: Binding<Bool> = State(initialValue: false).projectedValue,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
         onCommit: @escaping () -> Void = { },
         @ViewBuilder label: () -> Text
@@ -201,12 +206,7 @@ extension CocoaTextField where Label == Text {
         self.text = text
         self.onEditingChanged = onEditingChanged
         self.onCommit = onCommit
-    }
-}
-
-extension CocoaTextField {
-    public func isFirstResponder(_ isFirstResponder: Bool) -> Self {
-        then({ $0.isFirstResponder = isFirstResponder })
+        self.isEditing = isEditing
     }
 }
 
