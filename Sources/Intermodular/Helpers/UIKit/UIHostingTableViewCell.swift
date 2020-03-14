@@ -7,10 +7,10 @@ import SwiftUI
 
 #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
 
-class UIHostingTableViewCell<Content: View> : UITableViewCell {
+public class UIHostingTableViewCell<Content: View> : UITableViewCell {
     var contentHostingController: UIHostingController<Content>?
     
-    var content: Content? {
+    public var content: Content? {
         get {
             contentHostingController?.rootView
         } set {
