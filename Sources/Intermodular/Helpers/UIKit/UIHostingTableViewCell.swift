@@ -27,7 +27,8 @@ public class UIHostingTableViewCell<Content: View> : UITableViewCell {
                 let margins = contentView.layoutMarginsGuide
                 
                 view.translatesAutoresizingMaskIntoConstraints = false
-                
+                view.backgroundColor = .clear
+
                 contentView.addSubview(view)
                 
                 NSLayoutConstraint.activate([

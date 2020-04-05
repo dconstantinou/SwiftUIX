@@ -30,12 +30,14 @@ public struct CocoaTextField: UIViewRepresentable {
         @objc func editingBegun() {
             DispatchQueue.main.async {
                 self.view.isEditing?.wrappedValue = true
+                self.view.onEditingBegun?()
             }
         }
 
         @objc func editingEnded() {
             DispatchQueue.main.async {
                 self.view.isEditing?.wrappedValue = false
+                self.view.onEditingEnded?()
             }
         }
 
@@ -46,7 +48,9 @@ public struct CocoaTextField: UIViewRepresentable {
     @Binding var text: String
 
     let isEditing: Binding<Bool>?
+    let onEditingBegun: (() -> Void)?
     let onEditingChanged: (() -> Void)?
+    let onEditingEnded: (() -> Void)?
 
     private var font: UIFont?
     private var placeholder: String?
@@ -54,13 +58,14 @@ public struct CocoaTextField: UIViewRepresentable {
     private var autocorrectionType: UITextAutocorrectionType
     private var keyboardType: UIKeyboardType
     private var textAlignment: NSTextAlignment
+    private var textColor: UIColor?
 
     private var inputView: AnyView?
     private var inputAccessoryView: AnyView?
 
     // MARK: - Init
 
-    public init(text: Binding<String>, isEditing: Binding<Bool>? = nil, onEditingChanged: (() -> Void)? = nil) {
+    public init(text: Binding<String>, isEditing: Binding<Bool>? = nil, onEditingBegun: (() -> Void)? = nil, onEditingChanged: (() -> Void)? = nil, onEditingEnded: (() -> Void)? = nil) {
         _text = text
         self.isEditing = isEditing
         self.placeholder = nil
@@ -69,7 +74,10 @@ public struct CocoaTextField: UIViewRepresentable {
         self.autocorrectionType = .no
         self.keyboardType = .default
         self.textAlignment = .left
+        self.textColor = nil
+        self.onEditingBegun = onEditingBegun
         self.onEditingChanged = onEditingChanged
+        self.onEditingEnded = onEditingEnded
     }
 
     // MARK: - UIViewRepresentable
@@ -80,12 +88,6 @@ public struct CocoaTextField: UIViewRepresentable {
 
     public func makeUIView(context: UIViewRepresentableContext<CocoaTextField>) -> UITextField {
         let view = UITextField()
-        view.placeholder = placeholder
-        view.font = font
-        view.autocapitalizationType = autocapitalizationType
-        view.autocorrectionType = autocorrectionType
-        view.keyboardType = keyboardType
-        view.textAlignment = textAlignment
 
         view.addTarget(context.coordinator, action: #selector(Coordinator.textFieldDidChange(_:)), for: .editingChanged)
         view.addTarget(context.coordinator, action: #selector(Coordinator.editingBegun), for: .editingDidBegin)
@@ -95,7 +97,20 @@ public struct CocoaTextField: UIViewRepresentable {
     }
 
     public func updateUIView(_ view: UITextField, context: UIViewRepresentableContext<CocoaTextField>) {
+        if view.text != text {
+            DispatchQueue.main.async {
+                view.sendActions(for: .editingChanged)
+            }
+        }
+
         view.text = text
+        view.placeholder = placeholder
+        view.font = font
+        view.autocapitalizationType = autocapitalizationType
+        view.autocorrectionType = autocorrectionType
+        view.keyboardType = keyboardType
+        view.textAlignment = textAlignment
+        view.textColor = textColor
 
         if view.window != nil {
             if view.isFirstResponder && isEditing?.wrappedValue == false {
@@ -161,6 +176,10 @@ extension CocoaTextField {
 
     public func textAlignment(_ textAlignment: NSTextAlignment) -> Self {
         then({ $0.textAlignment = textAlignment })
+    }
+
+    public func textColor(_ textColor: UIColor?) -> Self {
+        then({ $0.textColor = textColor })
     }
 
 }
