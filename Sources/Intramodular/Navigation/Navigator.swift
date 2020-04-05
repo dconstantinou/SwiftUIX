@@ -7,6 +7,7 @@ import Swift
 import SwiftUI
 
 public protocol Navigator {
+    func set<V: View>(_: V)
     func push<V: View>(_: V)
     func pop()
 }
@@ -32,6 +33,10 @@ extension EnvironmentValues {
 #if os(iOS) || os(tvOS) || targetEnvironment(macCatalyst)
 
 extension UINavigationController: Navigator {
+    public func set<V: View>(_ view: V) {
+        setViewControllers([CocoaHostingController(rootView: view)], animated: true)
+    }
+
     public func push<V: View>(_ view: V) {
         pushViewController(CocoaHostingController(rootView: view), animated: true)
     }

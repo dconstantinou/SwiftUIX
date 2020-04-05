@@ -46,7 +46,11 @@ final class CocoaNavigationViewNavigator: Navigator {
     init(base: UINavigationController) {
         self.base = base
     }
-    
+
+    func set<V: View>(_ view: V) {
+        base.setViewControllers([_CocoaNavigatedContent.HostingController(rootView: view, navigator: self)], animated: true)
+    }
+
     func push<V: View>(_ view: V) {
         base.pushViewController(_CocoaNavigatedContent.HostingController(rootView: view, navigator: self), animated: true)
     }
