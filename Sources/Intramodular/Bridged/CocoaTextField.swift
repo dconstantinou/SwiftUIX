@@ -45,7 +45,7 @@ public struct CocoaTextField: UIViewRepresentable {
 
     // MARK: - Properties
 
-    @Binding var text: String
+    @Binding var text: String?
 
     let isEditing: Binding<Bool>?
     let onEditingBegun: (() -> Void)?
@@ -65,7 +65,7 @@ public struct CocoaTextField: UIViewRepresentable {
 
     // MARK: - Init
 
-    public init(text: Binding<String>, isEditing: Binding<Bool>? = nil, onEditingBegun: (() -> Void)? = nil, onEditingChanged: (() -> Void)? = nil, onEditingEnded: (() -> Void)? = nil) {
+    public init(text: Binding<String?>, isEditing: Binding<Bool>? = nil, onEditingBegun: (() -> Void)? = nil, onEditingChanged: (() -> Void)? = nil, onEditingEnded: (() -> Void)? = nil) {
         _text = text
         self.isEditing = isEditing
         self.placeholder = nil
@@ -97,12 +97,6 @@ public struct CocoaTextField: UIViewRepresentable {
     }
 
     public func updateUIView(_ view: UITextField, context: UIViewRepresentableContext<CocoaTextField>) {
-        if view.text != text {
-            DispatchQueue.main.async {
-                view.sendActions(for: .editingChanged)
-            }
-        }
-
         view.text = text
         view.placeholder = placeholder
         view.font = font
@@ -131,11 +125,15 @@ public struct CocoaTextField: UIViewRepresentable {
             view.inputAccessoryView = nil
         }
 
-        if let inputView = inputView {
-            if let _inputView = view.inputView as? UIHostingView<AnyView> {
+        if var inputView = inputView {
+            inputView = inputView
+                .environment(\.textInput, view)
+                .eraseToAnyView()
+
+            if let _inputView = view.inputView as? UIHostingInputView<AnyView> {
                 _inputView.rootView = inputView
             } else {
-                view.inputView = UIHostingView(rootView: inputView)
+                view.inputView = UIHostingInputView(rootView: inputView)
                 view.inputView?.autoresizingMask = [.flexibleWidth, .flexibleHeight]
             }
         } else {

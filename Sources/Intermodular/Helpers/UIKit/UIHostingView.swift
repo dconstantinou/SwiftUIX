@@ -24,12 +24,13 @@ open class UIHostingView<Content: View>: UIView {
         self.rootViewHostingController = UIHostingController(rootView: rootView)
         
         super.init(frame: .zero)
-        
+
+        backgroundColor = .clear
         rootViewHostingController.view.backgroundColor = .clear
-        
+
         addSubview(rootViewHostingController.view)
     }
-    
+
     public required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
