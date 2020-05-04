@@ -111,6 +111,10 @@ public struct CocoaTextField: UIViewRepresentable {
                 DispatchQueue.main.async {
                     view.resignFirstResponder()
                 }
+            } else if !view.isFirstResponder && isEditing?.wrappedValue == true {
+                DispatchQueue.main.async {
+                    view.becomeFirstResponder()
+                }
             }
         }
 
